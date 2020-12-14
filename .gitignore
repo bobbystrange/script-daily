@@ -1,0 +1,9 @@
+*.db
+*.lnk
+*~
+.idea/
+*.iws
+*.ipr
+out
+build
+.DS_Store
