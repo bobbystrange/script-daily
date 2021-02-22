@@ -23,7 +23,7 @@ class RabbitMQUtil:
             port = int(port)
             host = host.split(":")[0]
         connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host=host, port=port))
+            host=host, port=port, username=username, password=password))
         self.channel = connection.channel()
 
     def send(self, queue_name, message, exchange_name='', ):
@@ -57,11 +57,12 @@ class RabbitMQUtil:
             self.channel.basic_publish(
                 exchange='',
                 routing_key=queue_name,
-                body=message,
-                properties=pika.spec.BasicProperties(content_type="text/plain"))
+                body=body,
+                properties=properties)
         return callback
 
-    def help(self):
+    @staticmethod
+    def help():
         import sys
         print(
             f"Usage: {sys.argv[0]} amqp://username:password@localhost:5672/vhost \\")
@@ -69,7 +70,6 @@ class RabbitMQUtil:
             f"\treceive <queue>")
         print(
             "\tsend <queue> <message>...")
-
         print(
             f"\tmigrate <queue1> <queue2>")
         sys.exit(1)
@@ -82,21 +82,20 @@ if __name__ == '__main__':
     util = RabbitMQUtil()
     args = sys.argv
     if len(args) < 4:
-
         util.help()
 
-    url, cmd, queue_name = args[1], args[2], args[3]
+    some_url, some_cmd, some_queue_name = args[1], args[2], args[3]
 
-    util.connect_vhost(url)
-    if cmd.lower() in ["send", "s"]:
+    util.connect_vhost(some_url)
+    if some_cmd.lower() in ["send", "s"]:
         if len(args) < 5:
             util.help()
 
         messages = args[4:]
-        for message in messages:
-            print(message)
-            util.send(queue_name, message)
-    elif cmd.lower() in ["receive", "r"]:
-        util.receive(queue_name)
+        for message_body in messages:
+            print(message_body)
+            util.send(some_queue_name, message_body)
+    elif some_cmd.lower() in ["receive", "r"]:
+        util.receive(some_queue_name)
     else:
         util.help()

@@ -16,6 +16,8 @@ import org.dreamcat.common.util.StringUtil;
 
 /**
  * Create by tuke on 2020/11/18
+ * <p/>
+ * flat a bean to map
  */
 public class PojoFlatGenerator {
 

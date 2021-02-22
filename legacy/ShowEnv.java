@@ -23,8 +23,8 @@ public class ShowEnv {
         while(true){
             try {
                 Thread.sleep(1_000);
-            } catch (Exception e){
-                throw new RuntimeException(e);
+            } catch (InterruptedException e){
+                break;
             }
         }
     }

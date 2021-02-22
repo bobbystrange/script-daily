@@ -108,7 +108,7 @@ class Main:
 
 
 if __name__ == '__main__':
-    from .RenameStrategy import STRATEGY_CONSTRUCTOR_DICT
+    from .rename_strategy import STRATEGY_CONSTRUCTOR_DICT
 
     parser = argparse.ArgumentParser(usage='Rename duplicated value for a database table')
     parser.add_argument('-H', '--host', required=False, default='127.0.0.1', type=str)
