@@ -1,1 +1,3 @@
-rootProject.name=ARTIFACT_ID
+rootProject.name = 'script-daily'
+
+include 'on2103:on05_send_chp_to_ty'
