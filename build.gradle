@@ -30,4 +30,10 @@ subprojects {
 
         implementation "org.dreamcat:common-core:$COMMON_VERSION"
     }
+
+    task printVersion {
+        doLast {
+            print version
+        }
+    }
 }
