@@ -25,6 +25,7 @@ import org.elasticsearch.common.unit.TimeValue;
 @Slf4j
 public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
 
+    private final String indexSettings;
     private final String indexFormatter;
     private final EsIndexComponent sourceEsIndexComponent;
     private final EsSearchComponent sourceEsSearchComponent;
@@ -34,11 +35,13 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
 
     @Builder
     public ElasticsearchSchemaHandler(
+            String indexSettings,
             String indexFormatter,
             EsIndexComponent sourceEsIndexComponent,
             EsSearchComponent sourceEsSearchComponent,
             EsIndexComponent targetEsIndexComponent,
             EsDocumentComponent targetEsDocumentComponent) {
+        this.indexSettings = indexSettings;
         this.indexFormatter = indexFormatter;
         this.sourceEsIndexComponent = sourceEsIndexComponent;
         this.sourceEsSearchComponent = sourceEsSearchComponent;
@@ -85,8 +88,13 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
 
         Pair<String, String> pair = sourceEsIndexComponent.getIndex(sourceIndex);
         String mappings = pair.first();
-        String settings = pair.second();
-        targetEsIndexComponent.createIndex(targetIndex, mappings, settings);
+        if (verbose) log.info("create index {}, mappings={}, settings={}",
+                targetIndex, mappings, indexSettings);
+        targetEsIndexComponent.createIndex(targetIndex, mappings, indexSettings);
+
+        long total = sourceEsSearchComponent.count(sourceIndex);
+        log.info("migrate index {} to {}, find {} records", sourceIndex, targetIndex, total);
+        if (total == 0) return;
 
         // huge index, then
         try (ScrollMapIter scrollIter = sourceEsSearchComponent.scrollMapIter(
@@ -96,7 +104,9 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
                 if (list.isEmpty()) continue;
 
                 Map<String, String> idJsonMap = list.stream().collect(Collectors.toMap(
-                        it -> it.get("id").toString(), JacksonUtil::toJson));
+                        it -> it.get("id").toString(), JacksonUtil::toJson, (a, b) -> a));
+                if (verbose) log.info("migrate index {} to {}, bulk records: {}",
+                        sourceIndex, targetIndex, idJsonMap);
                 targetEsDocumentComponent.bulkSave(targetIndex, idJsonMap);
             }
         }

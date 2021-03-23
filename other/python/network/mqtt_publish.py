@@ -13,7 +13,7 @@ def on_connect(my_client, user_data, flags, result_code):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="publish some message to the network server")
+            description="publish some message to the network server")
     parser.add_argument('--topic', '-t', required=True,
                         help='the topic you wanna subscribe to')
     parser.add_argument('--hostname', '-H', default='127.0.0.1:61613',

@@ -42,8 +42,8 @@ public abstract class SchemaHandler {
             try {
                 handle(schema);
             } catch (Exception e) {
-                log.error("handle {} {}, error occurred: {}",
-                        schemaName, schema, e.getMessage());
+                log.error(String.format("handle %s %s, error occurred: %s",
+                        schemaName, schema, e.getMessage()), e);
                 if (abort) {
                     log.info("operation is aborted by exception");
                     break;

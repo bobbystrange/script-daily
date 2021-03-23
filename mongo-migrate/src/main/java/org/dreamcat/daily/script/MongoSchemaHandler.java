@@ -45,7 +45,7 @@ public class MongoSchemaHandler extends SchemaHandler {
         }
 
         List<Map> list = sourceMongoTemplate.findAll(Map.class, collectionName);
-        log.info("migrate collection {}, find {} records", list.size(), collectionName);
+        log.info("migrate collection {}, find {} records", collectionName, list.size());
         for (Map map : list) {
             if (verbose) log.info("migrate collection {}, record: {}",
                     collectionName, JacksonUtil.toJson(map));
