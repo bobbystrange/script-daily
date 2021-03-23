@@ -34,10 +34,16 @@ VERSION=`../gradlew :elasticsearch-migrate:printVersion -q`
 java \
   -Delastic.source.host= \
   -Delastic.source.port= \
+  -Delastic.source.username= \
+  -Delastic.source.password= \
   -Delastic.target.host= \
-  -Delastic.source.port= \
+  -Delastic.target.port= \
+  -Delastic.index.settings='{
+}' \
+  -Delastic.index.formatter='
+"target_" + it.substr("source_".length)  
+' \
   -jar ./elasticsearch-migrate/build/libs/elasticsearch-migrate-${VERSION}.jar
-
 ```
 
 
