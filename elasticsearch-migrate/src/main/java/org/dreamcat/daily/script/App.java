@@ -29,9 +29,8 @@ public class App implements CommandLineRunner {
         SpringApplication.run(App.class, args).close();
     }
 
-    @Value("${elastic.index.formatter:}")
-    private String indexFormatter;
-
+    @Value("${elastic.index.converter:}")
+    private String indexConverter;
     @Value("${elastic.index.settings}")
     private String indexSettings;
 
@@ -46,9 +45,9 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        SchemaHandler schemaHandler = ElasticsearchSchemaHandler.builder()
+        SchemaHandler<?> schemaHandler = ElasticsearchSchemaMigrateHandler.builder()
                 .indexSettings(indexSettings)
-                .indexFormatter(indexFormatter)
+                .indexConverter(indexConverter)
                 .sourceEsIndexComponent(sourceEsIndexComponent)
                 .sourceEsSearchComponent(sourceEsSearchComponent)
                 .targetEsIndexComponent(targetEsIndexComponent)

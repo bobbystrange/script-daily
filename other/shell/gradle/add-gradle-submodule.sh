@@ -9,8 +9,6 @@ function add-gradle-submodule() {
     name=$1
     mkdir -p $name/src/main/java
     mkdir -p $name/src/main/resources
-    mkdir -p $name/src/test/java
-    mkdir -p $name/src/test/resources
     touch $name/build.gradle
 
     echo "include '$name'" >> settings.gradle

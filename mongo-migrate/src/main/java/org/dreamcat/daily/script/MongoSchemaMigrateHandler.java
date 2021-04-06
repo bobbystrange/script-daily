@@ -16,13 +16,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @Builder
 @AllArgsConstructor
 @SuppressWarnings({"rawtypes"})
-public class MongoSchemaHandler extends SchemaHandler {
+public class MongoSchemaMigrateHandler extends SchemaHandler<String> {
 
     private final MongoTemplate sourceMongoTemplate;
     private final MongoTemplate targetMongoTemplate;
 
     @Override
-    public String getSchemaName() {
+    public String getSchemaKeyword() {
         return "collection";
     }
 

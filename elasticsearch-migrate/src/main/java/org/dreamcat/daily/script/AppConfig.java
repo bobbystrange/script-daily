@@ -35,7 +35,6 @@ public class AppConfig {
         return new EsIndexComponent(targetRestHighLevelClient);
     }
 
-
     @Bean(name = "targetEsDocumentComponent")
     public EsDocumentComponent targetEsDocumentComponent() {
         return new EsDocumentComponent(targetRestHighLevelClient);

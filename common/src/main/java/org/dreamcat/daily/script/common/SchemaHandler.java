@@ -4,46 +4,50 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 import org.dreamcat.common.text.argparse.ArgParseException;
 import org.dreamcat.common.text.argparse.ArgParser;
 import org.dreamcat.common.util.ObjectUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Create by tuke on 2021/3/22
  */
-@Slf4j
-public abstract class SchemaHandler {
+public abstract class SchemaHandler<T> {
 
     protected boolean verbose;
     protected boolean force;
 
     private boolean exclude;
     private List<Pattern> patterns;
-    // abort by exception
-    private boolean abort;
+    private boolean abort; // abort by exception
 
-    protected String getSchemaName() {
-        return DEFAULT_SCHEMA_NAME;
+    protected String getSchemaKeyword() {
+        return DEFAULT_SCHEMA_KEYWORD;
     }
 
-    protected abstract Iterable<String> getSchemas();
+    protected String formatSchema(T schema) {
+        return schema.toString();
+    }
 
-    protected abstract void handle(String schema);
+    protected abstract Iterable<T> getSchemas();
+
+    protected abstract void handle(T schema) throws Exception;
 
     public void run(String... args) {
         this.parseArgs(args);
-        String schemaName = this.getSchemaName();
-        for (String schema : this.getSchemas()) {
+        String schemaKeyword = this.getSchemaKeyword();
+        for (T schema : this.getSchemas()) {
+            String schemaName = this.formatSchema(schema);
             if (!matchSchema(schema)) {
-                if (verbose) log.info("skip unmatched {} {}", schemaName, schema);
+                if (verbose) log.info("skip unmatched {} {}", schemaKeyword, schemaName);
                 continue;
             }
             try {
-                handle(schema);
+                this.handle(schema);
             } catch (Exception e) {
                 log.error(String.format("handle %s %s, error occurred: %s",
-                        schemaName, schema, e.getMessage()), e);
+                        schemaKeyword, schemaName, e.getMessage()), e);
                 if (abort) {
                     log.info("operation is aborted by exception");
                     break;
@@ -52,14 +56,18 @@ public abstract class SchemaHandler {
         }
     }
 
-    private void parseArgs(String... args) {
+    protected ArgParser defineArgs() {
         ArgParser argParser = ArgParser.newInstance();
         argParser.addList("include", "i", "include");
         argParser.addList("exclude", "e", "exclude");
         argParser.addBool("verbose", "v", "verbose");
         argParser.addBool("force", "f", "force");
         argParser.addBool("abort", "a", "abort");
+        return argParser;
+    }
 
+    protected ArgParser parseArgs(String... args) {
+        ArgParser argParser = this.defineArgs();
         try {
             argParser.parse(args);
         } catch (ArgParseException e) {
@@ -82,12 +90,14 @@ public abstract class SchemaHandler {
             list = excludeList;
         }
         this.patterns = list.stream().map(Pattern::compile).collect(Collectors.toList());
+        return argParser;
     }
 
-    private boolean matchSchema(String collectionName) {
+    private boolean matchSchema(T schema) {
+        String schemaName = this.formatSchema(schema);
         if (ObjectUtil.isEmpty(patterns)) return true;
         for (Pattern pattern : patterns) {
-            if (pattern.matcher(collectionName).find()) {
+            if (pattern.matcher(schemaName).find()) {
                 // in matched case
                 // if exclude, then return false to skip it
                 return !exclude;
@@ -98,5 +108,7 @@ public abstract class SchemaHandler {
         return exclude;
     }
 
-    private static final String DEFAULT_SCHEMA_NAME = "schema";
+    private static final String DEFAULT_SCHEMA_KEYWORD = "schema";
+
+    protected static final Logger log = LoggerFactory.getLogger(SchemaHandler.class);
 }

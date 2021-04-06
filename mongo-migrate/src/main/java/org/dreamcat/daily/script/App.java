@@ -31,7 +31,7 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        SchemaHandler schemaHandler = MongoSchemaHandler.builder()
+        SchemaHandler<?> schemaHandler = MongoSchemaMigrateHandler.builder()
                 .sourceMongoTemplate(sourceMongoTemplate)
                 .targetMongoTemplate(targetMongoTemplate)
                 .build();

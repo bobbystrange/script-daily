@@ -1,7 +1,5 @@
 package org.dreamcat.daily.script;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,10 +21,10 @@ import org.elasticsearch.common.unit.TimeValue;
  * Create by tuke on 2021/3/22
  */
 @Slf4j
-public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
+public class ElasticsearchSchemaMigrateHandler extends SchemaMigrateHandler<String> {
 
     private final String indexSettings;
-    private final String indexFormatter;
+    private final String indexConverter;
     private final EsIndexComponent sourceEsIndexComponent;
     private final EsSearchComponent sourceEsSearchComponent;
     private final EsIndexComponent targetEsIndexComponent;
@@ -34,15 +32,15 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
     private final DelegateScriptEngine scriptEngine;
 
     @Builder
-    public ElasticsearchSchemaHandler(
+    public ElasticsearchSchemaMigrateHandler(
             String indexSettings,
-            String indexFormatter,
+            String indexConverter,
             EsIndexComponent sourceEsIndexComponent,
             EsSearchComponent sourceEsSearchComponent,
             EsIndexComponent targetEsIndexComponent,
             EsDocumentComponent targetEsDocumentComponent) {
         this.indexSettings = indexSettings;
-        this.indexFormatter = indexFormatter;
+        this.indexConverter = indexConverter;
         this.sourceEsIndexComponent = sourceEsIndexComponent;
         this.sourceEsSearchComponent = sourceEsSearchComponent;
         this.targetEsIndexComponent = targetEsIndexComponent;
@@ -51,7 +49,7 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
     }
 
     @Override
-    public String getSchemaName() {
+    public String getSchemaKeyword() {
         return "index";
     }
 
@@ -61,44 +59,47 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
     }
 
     @Override
-    protected String formatSchema(String sourceSchema) {
-        if (ObjectUtil.isNotBlank(indexFormatter)) {
-            Map<List<String>, Object> context = Collections.singletonMap(
-                    DEFAULT_PARAMS, sourceSchema);
+    protected String getTargetSchema(String sourceSchema) {
+        if (ObjectUtil.isNotBlank(indexConverter)) {
             try {
-                return scriptEngine.evalMultiKey(indexFormatter, context);
+                return scriptEngine.evalWith(indexConverter, sourceSchema);
             } catch (ScriptException e) {
-                log.error("failed to format schema {}, error: {}", sourceSchema, e.getMessage());
+                String message = String.format("failed to format schema %s with converter `%s`, %s",
+                        sourceSchema, indexConverter, e.getMessage());
+                throw new RuntimeException(message, e);
             }
         }
-        return super.formatSchema(sourceSchema);
+        return super.getTargetSchema(sourceSchema);
     }
 
     @Override
-    protected void handle(String sourceIndex, String targetIndex) {
-        if (targetEsIndexComponent.existsIndex(targetIndex)) {
-            if (force) {
-                log.warn("drop target index {}", targetIndex);
-                targetEsIndexComponent.deleteIndex(targetIndex);
-            } else {
-                log.warn("index {} already exists in target source", targetIndex);
-                return;
-            }
-        }
+    protected boolean existsSchema(String schema) {
+        return targetEsIndexComponent.existsIndex(schema);
+    }
 
-        Pair<String, String> pair = sourceEsIndexComponent.getIndex(sourceIndex);
+    @Override
+    protected void deleteSchema(String schema) {
+        targetEsIndexComponent.deleteIndex(schema);
+    }
+
+    @Override
+    protected void createSchema(String sourceSchema, String schema) {
+        Pair<String, String> pair = sourceEsIndexComponent.getIndex(sourceSchema);
         String mappings = pair.first();
         if (verbose) log.info("create index {}, mappings={}, settings={}",
-                targetIndex, mappings, indexSettings);
-        targetEsIndexComponent.createIndex(targetIndex, mappings, indexSettings);
+                schema, mappings, indexSettings);
+        targetEsIndexComponent.createIndex(schema, mappings, indexSettings);
+    }
 
-        long total = sourceEsSearchComponent.count(sourceIndex);
-        log.info("migrate index {} to {}, find {} records", sourceIndex, targetIndex, total);
+    @Override
+    protected void migrateSchema(String sourceSchema, String targetSchema) {
+        long total = sourceEsSearchComponent.count(sourceSchema);
+        log.info("migrate index {} to {}, find {} records", sourceSchema, targetSchema, total);
         if (total == 0) return;
 
         // huge index, then
         try (ScrollMapIter scrollIter = sourceEsSearchComponent.scrollMapIter(
-                sourceIndex, DEFAULT_SIZE, TimeValue.timeValueMillis(DEFAULT_KEEP_ALIVE))) {
+                sourceSchema, DEFAULT_SIZE, TimeValue.timeValueMillis(DEFAULT_KEEP_ALIVE))) {
             while (scrollIter.hasNext()) {
                 List<Map<String, Object>> list = scrollIter.next();
                 if (list.isEmpty()) continue;
@@ -106,14 +107,12 @@ public class ElasticsearchSchemaHandler extends SchemaMigrateHandler {
                 Map<String, String> idJsonMap = list.stream().collect(Collectors.toMap(
                         it -> it.get("id").toString(), JacksonUtil::toJson, (a, b) -> a));
                 if (verbose) log.info("migrate index {} to {}, bulk records: {}",
-                        sourceIndex, targetIndex, idJsonMap);
-                targetEsDocumentComponent.bulkSave(targetIndex, idJsonMap);
+                        sourceSchema, targetSchema, idJsonMap);
+                targetEsDocumentComponent.bulkSave(targetSchema, idJsonMap);
             }
         }
     }
 
     private static final int DEFAULT_SIZE = 1024;
     private static final long DEFAULT_KEEP_ALIVE = 60L * 1000;
-    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
-            "$1", "_1", "it", "a1", "p1", "arg1", "param1", "parameter1");
 }
