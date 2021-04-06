@@ -79,16 +79,25 @@ public class ElasticsearchSchemaMigrateHandler extends SchemaMigrateHandler<Stri
 
     @Override
     protected void deleteSchema(String schema) {
-        targetEsIndexComponent.deleteIndex(schema);
+        if (verbose) {
+            log.warn("delete {} {}", getSchemaKeyword(), schema);
+        }
+        if (effect) {
+            targetEsIndexComponent.deleteIndex(schema);
+        }
     }
 
     @Override
     protected void createSchema(String sourceSchema, String schema) {
         Pair<String, String> pair = sourceEsIndexComponent.getIndex(sourceSchema);
         String mappings = pair.first();
-        if (verbose) log.info("create index {}, mappings={}, settings={}",
-                schema, mappings, indexSettings);
-        targetEsIndexComponent.createIndex(schema, mappings, indexSettings);
+        if (verbose) {
+            log.info("create index {}, mappings={}, settings={}",
+                    schema, mappings, indexSettings);
+        }
+        if (effect) {
+            targetEsIndexComponent.createIndex(schema, mappings, indexSettings);
+        }
     }
 
     @Override
@@ -106,9 +115,13 @@ public class ElasticsearchSchemaMigrateHandler extends SchemaMigrateHandler<Stri
 
                 Map<String, String> idJsonMap = list.stream().collect(Collectors.toMap(
                         it -> it.get("id").toString(), JacksonUtil::toJson, (a, b) -> a));
-                if (verbose) log.info("migrate index {} to {}, bulk records: {}",
-                        sourceSchema, targetSchema, idJsonMap);
-                targetEsDocumentComponent.bulkSave(targetSchema, idJsonMap);
+                if (verbose) {
+                    log.info("migrate index {} to {}, bulk records: {}",
+                            sourceSchema, targetSchema, idJsonMap);
+                }
+                if (effect) {
+                    targetEsDocumentComponent.bulkSave(targetSchema, idJsonMap);
+                }
             }
         }
     }

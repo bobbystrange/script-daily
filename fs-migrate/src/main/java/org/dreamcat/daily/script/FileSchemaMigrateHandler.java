@@ -57,7 +57,12 @@ public abstract class FileSchemaMigrateHandler extends SchemaMigrateHandler<Path
     @Override
     protected void deleteSchema(Path schema) {
         try {
-            Files.delete(schema);
+            if (verbose) {
+                log.warn("delete {} {}", getSchemaKeyword(), schema);
+            }
+            if (effect) {
+                Files.delete(schema);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

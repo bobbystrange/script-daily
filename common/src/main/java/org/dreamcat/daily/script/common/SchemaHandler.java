@@ -17,6 +17,7 @@ public abstract class SchemaHandler<T> {
 
     protected boolean verbose;
     protected boolean force;
+    protected boolean effect;
 
     private boolean exclude;
     private List<Pattern> patterns;
@@ -63,6 +64,7 @@ public abstract class SchemaHandler<T> {
         argParser.addBool("verbose", "v", "verbose");
         argParser.addBool("force", "f", "force");
         argParser.addBool("abort", "a", "abort");
+        argParser.addBool("effect", "E", "effect");
         return argParser;
     }
 
@@ -80,6 +82,7 @@ public abstract class SchemaHandler<T> {
         this.verbose = argParser.getBool("verbose");
         this.force = argParser.getBool("force");
         this.abort = argParser.getBool("abort");
+        this.effect = argParser.getBool("effect");
 
         List<String> list = Collections.emptyList();
         if (ObjectUtil.isNotEmpty(includeList)) {

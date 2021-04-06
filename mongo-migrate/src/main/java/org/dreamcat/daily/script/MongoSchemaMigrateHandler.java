@@ -37,7 +37,9 @@ public class MongoSchemaMigrateHandler extends SchemaHandler<String> {
         if (targetMongoTemplate.collectionExists(collectionName)) {
             if (force) {
                 log.warn("drop target collection {}", collectionName);
-                targetMongoTemplate.dropCollection(collectionName);
+                if (effect) {
+                    targetMongoTemplate.dropCollection(collectionName);
+                }
             } else {
                 log.warn("collection {} already exists in target source", collectionName);
                 return;
@@ -47,9 +49,13 @@ public class MongoSchemaMigrateHandler extends SchemaHandler<String> {
         List<Map> list = sourceMongoTemplate.findAll(Map.class, collectionName);
         log.info("migrate collection {}, find {} records", collectionName, list.size());
         for (Map map : list) {
-            if (verbose) log.info("migrate collection {}, record: {}",
-                    collectionName, JacksonUtil.toJson(map));
-            targetMongoTemplate.save(map, collectionName);
+            if (verbose) {
+                log.info("migrate collection {}, record: {}",
+                        collectionName, JacksonUtil.toJson(map));
+            }
+            if (effect) {
+                targetMongoTemplate.save(map, collectionName);
+            }
         }
     }
 }

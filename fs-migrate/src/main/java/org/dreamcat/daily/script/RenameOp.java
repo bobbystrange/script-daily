@@ -11,7 +11,6 @@ import org.dreamcat.common.text.argparse.ArgParser;
  */
 public class RenameOp extends FileSchemaMigrateHandler {
 
-    private boolean effect;
     // regex like: ^(.+)\?.+$
     private String sourceRegex;
     // support regex like: $1
@@ -40,7 +39,6 @@ public class RenameOp extends FileSchemaMigrateHandler {
     @Override
     protected ArgParser defineArgs() {
         ArgParser argParser = super.defineArgs();
-        argParser.addBool("effect", "E", "effect");
         argParser.add("sourceRegex", "sr", "sourceRegex");
         argParser.add("replacementRegex", "rr", "replacementRegex");
         return argParser;
@@ -49,7 +47,6 @@ public class RenameOp extends FileSchemaMigrateHandler {
     @Override
     protected ArgParser parseArgs(String... args) {
         ArgParser argParser = super.parseArgs(args);
-        this.effect = argParser.getBool("effect");
         this.sourceRegex = argParser.get("sourceRegex");
         this.replacementRegex = argParser.get("replacementRegex");
 
