@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function fedora-delete-old-kernel(){
+function fedora_delete_old_kernel(){
     KERNEL_VERSION=`uname -r`
     # delete the suffix: x86_64
     KERNEL_VERSION=${KERNEL_VERSION%.*}
@@ -26,5 +26,5 @@ function fedora-delete-old-kernel(){
 
 # don't call it via source the script
 if [ $# != 0 ]; then
-    fedora-delete-old-kernel $@
+    fedora_delete_old_kernel $@
 fi

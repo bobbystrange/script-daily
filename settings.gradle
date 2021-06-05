@@ -1,7 +1,19 @@
 rootProject.name = 'script-daily'
 
-include 'common'
-include 'send-mail'
-include 'mongo-migrate'
-include 'elasticsearch-migrate'
-include 'fs-migrate'
+def projects = [
+        'common',
+        'send-mail',
+        'mongo-migrate',
+        'elasticsearch-migrate',
+        'fs-migrate',
+        'other:jshell',
+        'other:kotlin',
+        'other:legacy',
+        'other:node',
+        'other:python',
+        'other:shell'
+]
+
+projects.forEach {
+    include it
+}

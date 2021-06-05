@@ -12,7 +12,7 @@ function error() {
     echo -e "\033[31m$@\033[0m"
 }
 
-function deploy-war-to-tomcat () {
+function deploy_war_to_tomcat () {
     CATALINA_BASE=$1
     if [ "x" = "x$CATALINA_BASE" ]; then
         error "too short argument list, require one at least"
@@ -66,5 +66,5 @@ function deploy-war-to-tomcat () {
 
 # don't call it via source the script
 if [ $# != 0 ]; then
-    deploy-war-to-tomcat $@
+    deploy_war_to_tomcat $@
 fi

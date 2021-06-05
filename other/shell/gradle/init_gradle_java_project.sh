@@ -4,7 +4,7 @@
 # exec: will discard rest of current scriptt
 # source: inline mode
 
-function init-gradle-java-project() {
+function init_gradle_java_project() {
     project_name=$1
     package_name=$2
 
@@ -24,5 +24,5 @@ function init-gradle-java-project() {
 
 # don't call it via source the script
 if [ $# != 0 ]; then
-    init-gradle-java-project $@
+    init_gradle_java_project $@
 fi

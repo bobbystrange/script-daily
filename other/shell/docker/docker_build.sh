@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
 
-function info() {
-    echo -e "\033[32m$@\033[0m"
-}
-function warn() {
-    echo -e "\033[33m$@\033[0m"
-}
-function error() {
-    echo -e "\033[31m$@\033[0m"
-}
-
 if [[ "$1" = "--help" || "$1" = "-h" ]]; then
     info "Usage: $0 IMAGE_NAME DOCKER_DIR [DOCKERFILE_NAME=Dockerfile]"
     exit 0
@@ -21,7 +11,7 @@ DOCKERFILE_NAME=$3
 
 [[ -z $DOCKERFILE_NAME ]] && DOCKERFILE_NAME=Dockerfile
 if [[ -z $IMAGE_NAME || -z $DOCKER_DIR ]]; then
-    error "require at least two argument as IMAGE_NAME and DOCKER_DIR"
+    log_error "require at least two argument as IMAGE_NAME and DOCKER_DIR"
     exit 1
 fi
 
@@ -41,11 +31,11 @@ fi
 
 
 if [[ -n `docker image ls | grep $repository | grep $tag` ]]; then
-    warn "$IMAGE_NAME already exists"
-    warn "Done"
+    log_warn "$IMAGE_NAME already exists"
+    log_warn "Done"
     exit 1
 fi
 
-info "Building docker image $IMAGE_NAME"
+log_info "Building docker image $IMAGE_NAME"
 docker build -f ./$DOCKERFILE_NAME -t $IMAGE_NAME .
-info "Done"
+log_info "Done"
