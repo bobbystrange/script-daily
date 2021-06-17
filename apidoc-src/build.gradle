@@ -1,0 +1,17 @@
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+dependencies {
+    implementation "org.dreamcat:common-x:$COMMON_VERSION"
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    compileOnly 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+
+    // https://mvnrepository.com/artifact/cglib/cglib
+    implementation 'cglib:cglib:3.3.0'
+    // https://mvnrepository.com/artifact/org.javassist/javassist
+    implementation "org.javassist:javassist:3.28.0-GA"
+}

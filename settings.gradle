@@ -6,6 +6,7 @@ def projects = [
         'mongo-migrate',
         'elasticsearch-migrate',
         'fs-migrate',
+        'apidoc-src',
         'other:jshell',
         'other:kotlin',
         'other:legacy',
